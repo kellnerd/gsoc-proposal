@@ -2,12 +2,12 @@
 
 if [[ $# -eq 0 ]]
 then
-	input="proposal.md"
+	input="README.md"
+	output="proposal.pdf"
 else
 	input="$1"
+	output="${input%.*}.pdf"
 fi
-
-output="${input%.*}.pdf"
 
 echo "Writing PDF to $output ..."
 pandoc --defaults pandoc.yaml "$input" --output "$output"
