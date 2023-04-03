@@ -1,0 +1,15 @@
+highlight-style: haddock
+# better Unicode support
+pdf-engine: xelatex
+variables:
+    documentclass: article
+    papersize: A4
+    fontsize: 11pt
+    # fallback font for symbols: https://eskola.uk/2021/pandoc-latex-font-fallback/
+    header-includes: |
+        \usepackage[Symbols]{ucharclasses}
+        \newfontfamily\fallbackfont{DejaVu Sans}
+        \setTransitionsForSymbols{\fallbackfont}{\normalfont}
+    geometry:
+    - margin=2.5cm
+    colorlinks: true
