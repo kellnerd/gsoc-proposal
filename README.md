@@ -16,7 +16,7 @@ keywords:
 # Contact Information
 
 - **Name**: David Kellner
-- **Email**: [redacted] <small>(*I will not publish my email address in a public forum, but you can find it in the PDF version of my proposal for the GSoC website.*)</small>
+- **Email**: [redacted] <small>(*I will not publish my email address in a public place, but mentors can find it in the PDF version of my proposal for the GSoC website.*)</small>
 - **Libera.Chat IRC**: kellnerd
 - **GitHub**: [kellnerd](https://github.com/kellnerd)
 - **Timezone**: UTC+02:00 (Central European Summer Time)
@@ -508,8 +508,6 @@ As of writing this proposal, the latest available dumps are from February 2023:
 
 - **July 31 - August 06**: *Midterm evaluations*
 
-	Will the July 14 (18:00 UTC) deadline of the standard coding period also move to this week's Friday?
-
 - **August 07 - August 13**: Coding Period, Week 10
   - Create relationships between pending entities (now that we can create incomplete pending entities which will be updated later)
 
@@ -543,6 +541,8 @@ As of writing this proposal, the latest available dumps are from February 2023:
 
 - **November 6 (18:00 UTC)**: *Final Submission and Final Evaluation*
 
+The buffer weeks will be used for catching up, otherwise I will already begin with the tasks for the next week.
+
 # About Me
 
 ## Biographical Information
@@ -564,6 +564,7 @@ Therefore I am very confident that I will quickly acquire any skills that I migh
 I am a member of the MetaBrainz community since 2019, when I first started editing on MusicBrainz.
 Since then I have contributed to MetaBrainz projects in various aspects:
 I have reported issues, helped translating the MB website and Picard, patched userscripts and wrote my own, submitted a few small pull requests and lurked in IRC meetings.
+
 Through MetaBrainz I have learned about GSoC in 2020 and considered applying for it myself, but never had enough time during the summer so far.
 This year that has finally changed and I have decided to take my (probably last) chance to participate.
 
