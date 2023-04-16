@@ -283,7 +283,7 @@ CREATE TABLE bookbrainz.entity (
 
 Combining the tables (and dropping the `bookbrainz.import` table) has two advantages:
 
-1. We no longer have to move pending entities into the `bookbrainz.entity` once they have been accepted, we can simply update the new `is_import` flag.
+1. We no longer have to move pending entities into the `bookbrainz.entity` table once they have been accepted, we can simply update the new `is_import` flag.
 
 2. The `source_bbid` and `target_bbid` columns of the `bookbrainz.relationship` table have a foreign key constraint to the `bbid` column of `bookbrainz.entity`.
 	Having a separate table for imports would have violated that constraint.
@@ -307,7 +307,7 @@ The first problem can be considered a feature as it makes pending entities more 
 After all, we want our users to approve or discard imports related which are related to entities they are familiar with.
 Ideally we would provide a way to hide relationships to pending entities, of course.
 
-To solve the second problem, we only create **unidirectional relationships** from a pending entities to accepted entities initially, i.e. updating the accepted target entities' relationship sets will be delayed.
+To solve the second problem, we only create **unidirectional relationships** from pending entities to accepted entities initially, i.e. updating the accepted target entities' relationship sets will be delayed.
 There are multiple times during the import flow when we can upgrade these unidirectional relationships to full bidirectional relationships:
 
 1. When the pending entity becomes an accepted entity.
@@ -434,7 +434,7 @@ Once the importer is ready, we can still decide to use the plain text or binary 
 
 # Datasets
 
-Once we have a working parser for MARC records, we should be able to import entities from a variety of (national) libraries) which use the MARC standard to catalog their collections.
+Once we have a working parser for MARC records, we should be able to import entities from a variety of (national) libraries which use the MARC standard to catalog their collections.
 
 I have chosen the LOC, which provides a large collection of MARC records and is also the inventor of the standard, and the DNB, because they offer all of their data for free and I have already used it in a personal project.
 
@@ -554,7 +554,7 @@ During my bachelor studies, I had programming courses in C/C++ (with which I was
 However, most of my coding skills which are relevant to manage this project have been obtained by self-study.
 I am experienced with HTML, CSS, JavaScript and SQL, which I have used for multiple of my personal projects over the last ten years.
 For my bachelor thesis I developed a Node.js web application with the Express.js framework which is also used by BookBrainz, so I am also familiar with that.
-About two years ago I have started to learn TypeScript as I had noticed that I was written lots of JSDoc type annotations since I am using VS code as my IDE.
+About two years ago I have started to learn TypeScript as I had noticed that I was writing lots of JSDoc type annotations since I am using VS code as my IDE.
 My love for regular expressions might also prove useful when it comes to parsing records from external data sources.
 
 While I was still at school (which unfortunately did not offer real IT classes), I have given many different (programming) languages a try:
