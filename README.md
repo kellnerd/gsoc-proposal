@@ -54,7 +54,7 @@ Before I will start to explain the software architecture of the import process, 
 
 ## Existing Infrastructure
 
-Infrastructure to import entities into BookBrainz had already developed in a previous GSoC project from 2018 [^blog-2018].
+Infrastructure to import entities into BookBrainz had already been developed in a previous GSoC project from 2018 [^blog-2018].
 The architecture consists of two separate types of services which are connected by a [RabbitMQ] messaging queue which acts as a processing queue:
 
 1. **Producer**: Extracts external entities from a database dump (or an API) and emits parsed entities which are inserted into the queue.
@@ -345,7 +345,7 @@ Since these entities contain only a minimal amount of data, we want them to be u
 When we are doing a full import of an external source, we can assume that it still contains the complete desired entity.
 This means that updating pending imports is a desired behavior and we should not skip duplicates at the consumer.
 
-If we want to that, duplicates should be identified as early as possible to avoid wasting processing time, i.e. by the **producer** at the external entity level.
+If we want to do that, duplicates should be identified as early as possible to avoid wasting processing time, i.e. by the **producer** at the external entity level.
 Since we do not want the producer to permanently ask the database whether the currently processed entity is already pending, and as the entity could also still be queued, there is only one reliable way to do the duplicate detection:
 The producer has to load the list of external identifiers, which have already been processed previously, during startup.
 This should be sufficient as we can assume that there are no duplicates within in the source dump file itself.
