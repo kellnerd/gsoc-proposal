@@ -21,7 +21,7 @@ keywords:
 - **GitHub**: [kellnerd](https://github.com/kellnerd)
 - **Timezone**: UTC+02:00 (Central European Summer Time)
 
-# Synopsis
+# Proposed Project
 
 BookBrainz still has a relatively small community and contains less entities than other comparable databases.
 Therefore we want to provide a way to import available collections of library records into the database while still ensuring that they meet BookBrainz' high data quality standards.
@@ -511,35 +511,15 @@ As of writing this proposal, the latest available dumps are from February 2023:
 
 My name is David Kellner and I am an MSc student of *Electrical Engineering and Information Technology* from Germany.
 While I am specialized in intelligent signal processing (machine learning, computer architecture, wireless communications) and automation technology, I have also attended software engineering lectures.
-During my bachelor studies, I had programming courses in C/C++ (with which I was already familiar) and also did other projects in Java, Python and Matlab.
-
-However, most of my coding skills which are relevant to manage this project have been obtained by self-study.
-I am experienced with HTML, CSS, JavaScript and SQL, which I have used for multiple of my personal projects over the last ten years.
-For my bachelor thesis I developed a Node.js web application with the Express.js framework which is also used by BookBrainz, so I am also familiar with that.
-For the last three years I have been doing quite a lot of projects in TypeScript as I had noticed that I was writing lots of JSDoc type annotations since I am using VS Code as my IDE.
-My love for regular expressions might also prove useful when it comes to parsing records from external data sources.
-
-While I was still at school (which unfortunately did not offer real IT classes), I have given many different (programming) languages a try:
-From C++, JavaScript (back when HTML5 audio/video support was the new thing) and PHP (for my first website backends) over SQL, Java (for Android) and Python (for Raspberry Pi projects) to Assembler (for microcontrollers and the Game Boy), I've experimented with many areas of software development.
-Therefore I am very confident that I will quickly acquire any skills that I might notice myself to be lacking during this project.
 
 I am a member of the MetaBrainz community since 2019, when I first started editing on MusicBrainz.
 Since then I have contributed to MetaBrainz projects in various aspects:
-I have reported issues, helped translating the MB website and Picard, patched userscripts and wrote my own, submitted a few small pull requests and lurked in IRC meetings.
+I have reported issues, helped translating the MB website and Picard, wrote my own userscripts, submitted small pull requests and started to participate in IRC meetings in February 2023.
 
 Through MetaBrainz I have learned about GSoC in 2020 and considered applying for it myself, but never had enough time during the summer until last year.
 Since I benefitted a lot from GSoC 2023 and got even more involved with MetaBrainz, I am back for another round.
 
-## Other Information
-
-> Tell us about the computer(s) you have available for working on your SoC project!
-
-I have a custom built desktop PC with AMD Ryzen 5 2600 CPU, Nvidia GeForce GTX 1660 Ti GPU, 16 GB of RAM and 1 TB SSD which is running Manjaro Linux (and Windows 10).
-
-> When did you first start programming?
-
-I did my first attempts at writing code when I was 13.
-Naive as I was, I decided to learn C++ because according to my research this was the programming language most of my favorite programs were written in.
+## Community Affinities
 
 > What type of music do you listen to? (Please list a series of MBIDs as examples.)
 
@@ -550,29 +530,28 @@ Other artists whose music I regularly listen to include *Led Zeppelin* ([678d88b
 
 Since I'm also a big movie fan and collector, of course I also listen to soundtrack albums by artists like *Hans Zimmer* ([e6de1f3b-6484-491c-88dd-6d619f142abc](https://musicbrainz.org/artist/e6de1f3b-6484-491c-88dd-6d619f142abc)) and *Ennio Morricone* ([a16e47f5-aa54-47fe-87e4-bb8af91a9fdd](https://musicbrainz.org/artist/a16e47f5-aa54-47fe-87e4-bb8af91a9fdd)).
 
-> What type of books do you read? (Please list a series of BBIDs as examples.)
-
-My all time favorites probably are the fantasy series *A Song of Ice and Fire* ([676bb144-ff07-4e79-aef1-51788ebc251a](https://bookbrainz.org/series/676bb144-ff07-4e79-aef1-51788ebc251a)) and *Harry Potter* ([e6f48cbd-26de-4c2e-a24a-29892f9eb3be](https://bookbrainz.org/series/e6f48cbd-26de-4c2e-a24a-29892f9eb3be)), of which I own all the books in German and English -- not to speak of the audio books and movie/TV adaptions.
-
-Additionally I read thrillers such as Thomas Harris' *Red Dragon* ([df62f3a9-ffdb-4089-a867-2f2ad5c430af](https://bookbrainz.org/work/df62f3a9-ffdb-4089-a867-2f2ad5c430af)) or Daniel Suarez' *Daemon* ([2a4567cd-8e49-4b84-a2b5-b1e8718e15d7](https://bookbrainz.org/work/2a4567cd-8e49-4b84-a2b5-b1e8718e15d7)).
-
-Occasionally I also prefer less serious books like those by *Marc-Uwe Kling* ([c7152cbd-7db9-4cd5-95d6-1db9eb709992](https://bookbrainz.org/author/c7152cbd-7db9-4cd5-95d6-1db9eb709992)) and *Rita Falk* ([51033a32-a79a-466b-a74d-eab7213024d2](https://bookbrainz.org/author/51033a32-a79a-466b-a74d-eab7213024d2)).
-
-And since my childhood I'm a big fan of the Uncle Scrooge comics by *Carl Barks* ([28e0eba5-6c33-411a-baf7-a04a0611b418](https://bookbrainz.org/author/28e0eba5-6c33-411a-baf7-a04a0611b418)) and of Don Rosa's comic biography *The Life and Times of Scrooge McDuck* ([83cbfb59-328d-4211-a2d0-054e2460738b](https://bookbrainz.org/edition/83cbfb59-328d-4211-a2d0-054e2460738b)).
-
-> What aspects of the project you're applying for (e.g. MusicBrainz, AcousticBrainz, etc.) interest you the most?
+> What aspects of MusicBrainz/ListenBrainz/BookBrainz/Picard interest you the most?
 
 The git-like revision system and the possibility to undo wrong edits are definitely the most interesting feature of BookBrainz compared to MusicBrainz.
 Since I am also a big fan of MusicBrainz, I see a lot of potential in an open database which is following the Brainz philosophy and am looking forward to use it to manage my book collection soon.
 
-> Have you ever used MusicBrainz to tag your files?
+> Have you ever used MusicBrainz Picard to tag your files or used any of our projects in the past?
 
 Of course I have, I am slowly re-tagging my entire library with Picard after spending multiple years to write the perfect Picard tagger script for my needs...
+
+I am also an active editor on MusicBrainz since 2019, have occasionally edited on BookBrainz (still waiting to be able to *import* my collection) and started using ListenBrainz in January 2024.
+
+## Programming Precedents
+
+> When did you first start programming?
+
+I did my first attempts at writing code when I was 13.
+Naive as I was, I decided to learn C++ because according to my research this was the programming language most of my favorite programs were written in.
 
 > Have you contributed to other Open Source projects? If so, which projects and can we see some of your code?
 
 So far I've almost exclusively contributed to MetaBrainz projects, starting with a few minor bug fixes for MBS and features for Picard in 2020.
-You can [find my pull requests on GitHub](https://github.com/pulls?q=author%3Akellnerd+user%3Ametabrainz), including my smaller and medium size contributions to BookBrainz this year.
+You can [find my pull requests on GitHub](https://github.com/pulls?q=author%3Akellnerd+user%3Ametabrainz), including my contributions to BookBrainz since 2023.
 
 > What sorts of programming projects have you done on your own time?
 
@@ -583,7 +562,13 @@ Several years ago I've also written a JS/PHP/SQL application to manage my book c
 The only remaining features that are still ahead of BookBrainz are cover art and seeding with data from the [DNB API](https://www.dnb.de/EN/sru) (MARC 21 XML records!), as collections and series have since been implemented in BookBrainz.
 After all these years I've learned a lot and consider my old code unmaintainable, so I'm looking forward to this GSoC project and finally migrate all the data from my database into BookBrainz!
 
-> How much time do you have available, and how would you plan to use it?
+## Practical Requirements
+
+> What computer(s) do you have available for working on your SoC project?
+
+I have a custom built desktop PC with AMD Ryzen 5 2600 CPU, Nvidia GeForce GTX 1660 Ti GPU, 16 GB of RAM and 1 TB SSD which is running Manjaro Linux (and Windows 10).
+
+> How much time do you have available per week, and how would you plan to use it?
 
 Since I will write my master thesis this summer, I plan to have about 15 hours per week available for GSoC.
 There might be weeks during which I will be less available, but I think I can compensate the time during other weeks or over the weekend.
