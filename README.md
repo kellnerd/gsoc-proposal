@@ -1,8 +1,8 @@
 ---
 author: David Kellner
-title: "BookBrainz: Import Other Open Databases"
-subtitle: GSoC 2023 Proposal
-subject: GSoC 2023 Proposal
+title: "BookBrainz: Importing Entities With Relationships"
+subtitle: GSoC 2024 Proposal
+subject: GSoC 2024 Proposal
 keywords:
 - books
 - database import
@@ -26,10 +26,15 @@ keywords:
 BookBrainz still has a relatively small community and contains less entities than other comparable databases.
 Therefore we want to provide a way to import available collections of library records into the database while still ensuring that they meet BookBrainz' high data quality standards.
 
-From a previous GSoC project, the database schema already contains additional tables set up for that purpose, where the imports will await a user's approval before becoming a fully accepted entity in the database.
+From a previous GSoC project in 2018, the database schema already contains additional tables set up for that purpose, where the imports will await a user's approval before becoming a fully accepted entity in the database.
 
 The project will require processing very large data dumps (e.g. [MARC] records or [JSON] files) in a robust way and transforming entities from one database schema to the BookBrainz schema.
 Additionally the whole process should be repeatable without creating duplicate entries.
+
+My previous GSoC project from 2023 [^blog-2023] has achieved this for *standalone entities*, but it is not very useful to import works or editions without being able to link them to their authors, for example.
+So there is still a good amount of work ahead to adapt this process to import a *full set of related entities* and deal with all the edge cases.
+
+[^blog-2023]: Blog post: [GSoC 2023: Reviving the BookBrainz importer project](https://blog.metabrainz.org/2023/11/06/gsoc-2023-reviving-the-bookbrainz-importer-project/#more-10969)
 
 [JSON]: https://www.json.org/json-en.html
 [MARC]: https://www.loc.gov/marc/
@@ -55,6 +60,7 @@ Before I will start to explain the software architecture of the import process, 
 ## Existing Infrastructure
 
 Infrastructure to import entities into BookBrainz had already been developed in a previous GSoC project from 2018 [^blog-2018].
+Last year I modernized the whole codebase of the backend, fixed bugs and rewrote parts of it from scratch.
 The architecture consists of two separate types of services which are connected by a [RabbitMQ] messaging queue which acts as a processing queue:
 
 1. **Producer**: Extracts external entities from a database dump (or an API) and emits parsed entities which are inserted into the queue.
@@ -99,6 +105,9 @@ But pending entities currently only have aliases, identifiers and basic properti
 Allowing them to also have relationships could potentially lead to relationships between pending and accepted entities, because BookBrainz uses *bidirectional relationships* (new relationships also have to be added to the respective relationship's target entity).
 In order to prevent opening that can of worms, relationships are currently stored in the additional freeform data of pending entities.
 
+While this was an intentional decision to reduce the complexity of the project in 2018 [^proposal-2018], it is not a viable long term solution.
+Importing e.g. a work without at least a relationship to its author saves little work for the users, so we really need to support relationships this time.
+
 |                    | **Accepted Entity** (Standard) | **Pending Entity** (Import) |
 | ------------------ | :----------------------------: | :-------------------------: |
 |                    |       ![Accepted entity]       |   ![Pending entity 2018]    |
@@ -114,51 +123,31 @@ Table: Current features of pending entities
 
 [^1]: Refers to *regular* bidirectional relationships between two entities as well as *implicit* unidirectional relationships (which are used for Author Credits, Publisher lists and the link between an Edition and its Edition Group).
 
-While this was an intentional decision to reduce the complexity of the project in 2018 [^proposal-2018], it is not a viable long term solution.
-Importing e.g. a work without at least a relationship to its author saves little work for the users, so we really need to support relationships this time.
-
 [^proposal-2018]: Proposal: [GSoC 2018: Importing data into BookBrainz](https://community.metabrainz.org/t/gsoc-2018-importing-data-into-bookbrainz/367714)
 
-### Performance Issues
+### Outdated and Duplicated Code
 
-If support for relationships would be the only thing that is currently lacking you might ask yourself why this feature is still not in production in 2023.
-Part of the answer is that the developer of the system was not happy with their own results [^irc-logs-2019] although the project could be considered finished.
+If support for relationships would be the only thing that is currently lacking, you might ask yourself why this feature is still not in production in 2024.
+Part of the answer is that the developer of the system was not happy with their own results [^irc-logs-2019] although the project was considered to be finished.
 
 As a consequence, the producer and consumer services, which reside in the `bookbrainz-utils` repository [^importer-code], have never been used in production.
 The import tables in the database are still empty as of today and therefore it also made no sense to deploy the changes from [bookbrainz-site#201] to the website.
-
-One major issue was already identified back then:
-The self-developed [`asyncCluster` module](https://github.com/metabrainz/bookbrainz-utils/tree/master/importer/src/asyncCluster), which is used to spawn multiple parallel producer instances, proved to be neither performant nor really asynchronous.
-It is based on the Node.js [cluster] API that creates a separate *process* for each instance (which also results in high memory consumption).
-Since 2018 the newer [worker threads] API that only creates separate *threads* has become stable with Node.js v12.
-The conclusion was to drop the entire `asyncCluster` module in favour of worker threads since the data processing seemed to be rather CPU-intensive than I/O-bound.
 
 [^irc-logs-2019]: Discussion between *bukwurm* and *Mr_Monkey* in `#metabrainz` (IRC Logs: [June 3rd 2019](https://chatlogs.metabrainz.org/brainzbot/metabrainz/msg/4407776/) | [June 4th 2019](https://chatlogs.metabrainz.org/brainzbot/metabrainz/msg/4408831/))
 
 [^importer-code]: Code of the importer software infrastructure: [bookbrainz-utils/importer](https://github.com/metabrainz/bookbrainz-utils/tree/master/importer)
 
-[bookbrainz-site]: https://github.com/metabrainz/bookbrainz-site
-[cluster]: https://nodejs.org/api/cluster.html
-[worker threads]: https://nodejs.org/api/worker_threads.html
+Because BookBrainz has evolved since 2018, the importer was no longer up-to-date with the latest database schema when I took up the project again last year.
 
-### Outdated and Duplicated Code
-
-Almost five years have passed since the initial implementation of the importer project for GSoC 2018.
-Since BookBrainz has evolved in the meantime, the importer is no longer compatible with the latest database schema.
-
-The following changes should be necessary to get the importer project into a clean, working state again:
-
-- Entity type names have been changed in 2019 from *Creator* to *Author* and from *Publication* to *Edition Group* in order to make them more consistent. The remaining occurrences in the importer code have to be renamed too.
+While I have already updated most parts of the importer backend in 2023, the following changes are still necessary to get the whole importer project into a clean, working state again:
 
 - Add import tables for *Series* entities (which were introduced by a GSoC project in 2021).
-
-- Update the importer software infrastructure to support *Series* entities and *Author Credits* (which were introduced in 2022).
 
 - Entity [validators] from `bookbrainz-site` (which are used to validate entity editor form data) have been duplicated and adapted for the consumer. Ideally generalized versions of these validators should be moved into [bookbrainz-data-js] and used by both.
 
 - The UI to list recent imports uses its own kind of pagination component, which should be replaced by the pagination component that is used elsewhere (and which was introduced shortly after GSoC 2018).
 
-- The pending website changes [bookbrainz-site#201] have to be rebased onto the current `master` branch, which also involves using the new environment with Webpack and Docker (... and the code should probably be refactored a bit more).
+- The pending website changes [bookbrainz-site#201] have to be rebased onto the current `master` branch, which also involves using the new environment with Webpack and Docker.
 
 [validators]: https://github.com/metabrainz/bookbrainz-site/tree/master/src/client/entity-editor/validators
 [bookbrainz-data-js]: https://github.com/metabrainz/bookbrainz-data-js
@@ -167,35 +156,30 @@ The following changes should be necessary to get the importer project into a cle
 
 During GSoC I will try to achieve the following goals, only those marked as *stretch goal* are optional, the rest are required to consider this project a success:
 
-1. Update existing infrastructure to be compatible with the latest database schema
+1. Support importing series entities
 2. Test the infrastructure by finishing the [OpenLibrary producer] (also from GSoC 2018)
 3. Update database schema to support relationships between pending entities
 4. Resolve an entity's external identifiers to a BBID
 5. Create relationships between pending entities
-6. Add a consumer option to update already imported entities when an import process is repeated (with updated source data or an improved producer)
+6. Support updating already imported entities when an import process is repeated (with updated source data or an improved producer)
    1. Pending entities (automatically overwrite old data)
    2. Accepted entities which have *not* been changed in BookBrainz (update has to be approved again)
    3. Accepted entities which have been changed (requires merging) [stretch goal]
-7. Create a producer which parses MARC records
-8. Import MARC records from [LOC](#loc) (US Library of Congress)
-9. Import MARC records from [DNB](#dnb) (German National Library) [stretch goal]
-10. Create type definitions for the parsed entity JSON exchange format
-11. Improve the performance by replacing the custom `asyncCluster` implementation
-12. Document relevant new features while developing them and write test cases for critical code
-13. Dockerize the importer infrastructure (producers and consumer) [stretch goal]
+7. Document relevant features during development and write test cases for critical code
+8. Import a full dump from OpenLibrary
+9. Create a producer which parses MARC records [stretch goal]
+10. Import MARC records from [LOC](#loc) (US Library of Congress) or [DNB](#dnb) (German National Library) [stretch goal]
 
-[OpenLibrary producer]: https://github.com/metabrainz/bookbrainz-utils/tree/master/importer/src/openLibrary/producer
+[OpenLibrary producer]: https://github.com/metabrainz/bookbrainz-utils/tree/master/importer/src/openLibrary
 
 # Implementation
 
 In this section I will focus on the weaknesses of the already existing importer infrastructure and how I intend to improve them.
-Hence I will not write much about the parts which are already supposed to be working [^outdated-code] and will not propose to change the user-facing components or provide mockups for these.
+Hence I will not propose to change the user-facing components or provide mockups for these.
 
 The only user-facing change which I intend to do on top is displaying pending entities the same way as accepted entities, only with a special marker next to the entity name.
 In listings such as the relationship section or entity tables, pending entities will be displayed after the accepted entities.
 Ideally they can also be filtered and sorted in the future, but these are general features which BookBrainz is lacking so far and probably out of this project's scope.
-
-[^outdated-code]: I can not guarantee or test that currently, because the code is outdated and has to be adapted to the latest schema version first.
 
 ## Importing Entities With Relationships
 
@@ -345,11 +329,6 @@ Since these entities contain only a minimal amount of data, we want them to be u
 When we are doing a full import of an external source, we can assume that it still contains the complete desired entity.
 This means that updating pending imports is a desired behavior and we should not skip duplicates at the consumer.
 
-If we want to do that, duplicates should be identified as early as possible to avoid wasting processing time, i.e. by the **producer** at the external entity level.
-Since we do not want the producer to permanently ask the database whether the currently processed entity is already pending, and as the entity could also still be queued, there is only one reliable way to do the duplicate detection:
-The producer has to load the list of external identifiers, which have already been processed previously, during startup.
-This should be sufficient as we can assume that there are no duplicates within in the source dump file itself.
-
 ### Updating Pending Entities
 
 As discussed in the previous section, we want the consumer to update at least the pending entities.
@@ -361,7 +340,7 @@ These pending imports can automatically be overwritten with the new data from th
 
 	→ `bookbrainz.link_import` keeps track of discarded imports while these are deleted from `bookbrainz.import` (respectively `bookbrainz.entity` after the proposed schema change)
 
-Overwriting with new data is as trivial as it sounds, except for relationships (of course).
+Overwriting with new data is almost as trivial as it sounds, except for relationships (of course).
 Here we have to compare the pending entity's relationship set to the parsed entity's relationship data and make as little changes as possible (because every change also affects the respective target entity's relationship set).
 
 ### Updating Accepted Entities
@@ -471,102 +450,85 @@ As of writing this proposal, the latest available dumps are from February 2023:
 
 # Timeline
 
-- **May 04 - May 28**: *Community Bonding Period*
-  - Read documentation about MARC records
-  - Have a closer look at the existing importer code
-  - Continue to work on improving the type definitions of our data models
+- **May 01 - May 26**: *Community Bonding Period*
+  - Rebase importer UI from [bookbrainz-site#201] and get it running using the current development environment with Docker and Webpack
 
-- **May 29 - June 04**: Coding Period, Week 1
+- **May 27 - June 02**: Coding Period, Week 1
+  - Reuse database rows of pending entities when the import process is repeated
+
+- **June 03 - June 09**: Coding Period, Week 2
   - Generalize the entity data [validators] and move them into `bookbrainz-data-js`
-  - Update producer/consumer services to be compatible with the latest database schema
 
-- **June 05 - June 11**: Coding Period, Week 2
-  - Rebase [bookbrainz-site#201] and get it running using the current development environment with Docker and Webpack
-
-- **June 12 - June 18**: Coding Period, Week 3
-  - Verify that the current importer infrastructure (including the UI) is working as expected before proceeding
+- **June 10 - June 16**: Coding Period, Week 3
   - Update the importer database schema to support series entities and relationships
 
-- **June 19 - June 25**: Coding Period, Week 4
+- **June 17 - June 23**: Coding Period, Week 4
   - Resolve an entity's external identifiers to a BBID
-  - Create type definitions for the parsed entity JSON exchange format etc.
 
-- **June 26 - July 02**: Coding Period, Week 5
+- **June 24 - June 30**: Coding Period, Week 5
   - Support creating unidirectional relationships (which are used for Author Credits and to link an edition to its publishers)
+
+- **July 01 - July 07**: Coding Period, Week 6
   - Test the new infrastructure by adding these features to the [OpenLibrary producer]
 
-- **July 03 - July 09**: Coding Period, Week 6 (buffer week)
+- **July 08 - July 14**: Coding Period, Week 7
+  - Create bidirectional relationships between pending entities
 
-- **July 10 - July 16**: Coding Period, Week 7
-  - Improve the performance by replacing the custom `asyncCluster` implementation
-
-- **July 17 - July 23**: Coding Period, Week 8
-  - Detect already imported entities at the producer's side (now that we finished our performance tests for which this feature would have been unfortunate)
-
-- **July 24 - July 30**: Coding Period, Week 9
-  - Update pending entities when the import process is repeated
-
-- **July 31 - August 06**: *Midterm evaluations*
-
-- **August 07 - August 13**: Coding Period, Week 10
-  - Create relationships between pending entities (now that we can create incomplete pending entities which will be updated later)
-
-- **August 14 - August 20**: Coding Period, Week 11 (buffer week)
-
-- **August 21 - August 27**: Coding Period, Week 12 (end of the standard coding period)
+- **July 15 - July 21**: Coding Period, Week 8
   - Update website to handle pending relationships (in entity editor state and for display)
-  - Ask the community for good test cases from LOC / DNB catalogs
 
-- **September 04 - September 10**: Coding Period, Week 13
+- **July 22 - July 28**: *Midterm evaluations*
+
+- **July 29 - August 04**: Coding Period, Week 9
+  - Buffer time to ensure that the UI to accept pending entities is usable
+
+- **August 05 - August 11**: Coding Period, Week 10
+  - Create updates for already accepted entities which have not been changed in BB
+
+- **August 12 - August 18**: Coding Period, Week 11
+  - Try to merge updates for already accepted entities which have been changed
+
+- **August 19 - August 25**: Coding Period, Week 12 (end of the standard coding period)
+  - Perform an extensive import test run with dumps from OpenLibrary
+
+- **August 26 - September 01**: Coding Period, Week 13 (stretch goals)
   - Create a producer which parses MARC records
   - Analyze MARC records test data (from LOC and DNB) and write test cases
 
-- **September 11 - September 17**: Coding Period, Week 14
+- **September 02 - September 08**: Coding Period, Week 14 (stretch goals)
   - Fine-tune the MARC records parser
   - Directly stream gzipped data dumps instead of decompressing the input files first
 
-- **September 18 - September 25**: Coding Period, Week 15
-  - Perform an extensive import test run with dumps from LOC
-  - Also perform an import with dumps from DNB and OpenLibrary (optional)
-
-- **September 26 - October 01**: Coding Period, Week 16
-  - Create updates for already accepted entities which have not been changed in BB
-  - Try to merge updates for already accepted entities which have been changed
-
-- **October 02 - October 08**: Coding Period, Week 17 (buffer week)
-
-- **October 09 - October 15**: Coding Period, Week 18
+- **September 09 - September 15**: Coding Period, Week 15
   - Finish all started tasks and ensure that everything is in a working state
   - Write a blog post about the project
 
-- **November 6 (18:00 UTC)**: *Final Submission and Final Evaluation*
-
-The buffer weeks will be used for catching up, otherwise I will already begin with the tasks for the next week.
+- **November 4 (18:00 UTC)**: *Final Submission and Final Evaluation*
 
 # About Me
 
 ## Biographical Information
 
-My name is David Kellner and I am a MSc student of *Electrical Engineering and Information Technology* from Germany.
+My name is David Kellner and I am an MSc student of *Electrical Engineering and Information Technology* from Germany.
 While I am specialized in intelligent signal processing (machine learning, computer architecture, wireless communications) and automation technology, I have also attended software engineering lectures.
 During my bachelor studies, I had programming courses in C/C++ (with which I was already familiar) and also did other projects in Java, Python and Matlab.
 
 However, most of my coding skills which are relevant to manage this project have been obtained by self-study.
 I am experienced with HTML, CSS, JavaScript and SQL, which I have used for multiple of my personal projects over the last ten years.
 For my bachelor thesis I developed a Node.js web application with the Express.js framework which is also used by BookBrainz, so I am also familiar with that.
-About two years ago I have started to learn TypeScript as I had noticed that I was writing lots of JSDoc type annotations since I am using VS code as my IDE.
+For the last three years I have been doing quite a lot of projects in TypeScript as I had noticed that I was writing lots of JSDoc type annotations since I am using VS Code as my IDE.
 My love for regular expressions might also prove useful when it comes to parsing records from external data sources.
 
 While I was still at school (which unfortunately did not offer real IT classes), I have given many different (programming) languages a try:
 From C++, JavaScript (back when HTML5 audio/video support was the new thing) and PHP (for my first website backends) over SQL, Java (for Android) and Python (for Raspberry Pi projects) to Assembler (for microcontrollers and the Game Boy), I've experimented with many areas of software development.
-Therefore I am very confident that I will quickly acquire any skills that I might notice myself to be lacking during this project (e.g. advanced knowledge about React, Docker and threading in Node.js).
+Therefore I am very confident that I will quickly acquire any skills that I might notice myself to be lacking during this project.
 
 I am a member of the MetaBrainz community since 2019, when I first started editing on MusicBrainz.
 Since then I have contributed to MetaBrainz projects in various aspects:
 I have reported issues, helped translating the MB website and Picard, patched userscripts and wrote my own, submitted a few small pull requests and lurked in IRC meetings.
 
-Through MetaBrainz I have learned about GSoC in 2020 and considered applying for it myself, but never had enough time during the summer so far.
-This year that has finally changed and I have decided to take my (probably last) chance to participate.
+Through MetaBrainz I have learned about GSoC in 2020 and considered applying for it myself, but never had enough time during the summer until last year.
+Since I benefitted a lot from GSoC 2023 and got even more involved with MetaBrainz, I am back for another round.
 
 ## Other Information
 
@@ -605,8 +567,7 @@ Since I am also a big fan of MusicBrainz, I see a lot of potential in an open da
 
 > Have you ever used MusicBrainz to tag your files?
 
-Of course I have, but admittedly I've still only tagged a few test releases so far.
-Over three years after joining the MusicBrainz community, I'm still pushing the art of writing the perfect Picard tagger script for my needs to the extreme...
+Of course I have, I am slowly re-tagging my entire library with Picard after spending multiple years to write the perfect Picard tagger script for my needs...
 
 > Have you contributed to other Open Source projects? If so, which projects and can we see some of your code?
 
@@ -615,7 +576,8 @@ You can [find my pull requests on GitHub](https://github.com/pulls?q=author%3Ake
 
 > What sorts of programming projects have you done on your own time?
 
-Besides writing [userscripts for MusicBrainz](https://github.com/kellnerd/musicbrainz-scripts), I often create scripts (Bash, Node.js, Python) to automate tasks related to the maintenance of my personal audio and video file collections, e.g. [creating backups](https://github.com/kellnerd/backup) and tagging videos.
+Besides writing [userscripts for MusicBrainz](https://github.com/kellnerd/musicbrainz-scripts), I often create command line scripts (Bash, TypeScript/Deno) to automate tasks related to the maintenance of my personal audio and video file collections, e.g. [creating backups](https://github.com/kellnerd/backup) or [splitting audio files](https://github.com/kellnerd/cueshit).
+Recently I have been working on TypeScript API clients for [ListenBrainz](https://github.com/kellnerd/listenbrainz-ts) and [MusicBrainz](https://jsr.io/@kellnerd/musicbrainz).
 
 Several years ago I've also written a JS/PHP/SQL application to manage my book collection.
 The only remaining features that are still ahead of BookBrainz are cover art and seeding with data from the [DNB API](https://www.dnb.de/EN/sru) (MARC 21 XML records!), as collections and series have since been implemented in BookBrainz.
@@ -623,9 +585,5 @@ After all these years I've learned a lot and consider my old code unmaintainable
 
 > How much time do you have available, and how would you plan to use it?
 
-Since I will probably start writing my master thesis this summer, I plan to have about 20 hours per week available for GSoC.
+Since I will write my master thesis this summer, I plan to have about 15 hours per week available for GSoC.
 There might be weeks during which I will be less available, but I think I can compensate the time during other weeks or over the weekend.
-
-While I'm focusing on the project which I've proposed above, I will also work on improving the TypeScript typings of the ORM and other minor improvements in all BookBrainz repositories which make the implementation of my project easier.
-
-Maybe I will even work on the replacement of the unmaintained Bookshelf.js with an alternative ORM with better TypeScript support ([BB-729](https://tickets.metabrainz.org/browse/BB-729)).
