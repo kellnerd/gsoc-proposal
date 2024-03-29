@@ -34,7 +34,7 @@ Additionally the whole process should be repeatable without creating duplicate e
 My previous GSoC project from 2023 [^blog-2023] has achieved this for *standalone entities*, but it is not very useful to import works or editions without being able to link them to their authors, for example.
 So there is still a good amount of work ahead to adapt this process to import a *full set of related entities* and deal with all the edge cases.
 
-[^blog-2023]: Blog post: [GSoC 2023: Reviving the BookBrainz importer project](https://blog.metabrainz.org/2023/11/06/gsoc-2023-reviving-the-bookbrainz-importer-project/#more-10969)
+[^blog-2023]: Blog post: [GSoC 2023: Reviving the BookBrainz importer project](https://blog.metabrainz.org/2023/11/06/gsoc-2023-reviving-the-bookbrainz-importer-project/)
 
 [JSON]: https://www.json.org/json-en.html
 [MARC]: https://www.loc.gov/marc/
