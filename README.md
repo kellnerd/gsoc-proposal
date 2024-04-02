@@ -34,6 +34,8 @@ Additionally the whole process should be repeatable without creating duplicate e
 My previous GSoC project from 2023 [^blog-2023] has achieved this for *standalone entities*, but it is not very useful to import works or editions without being able to link them to their authors, for example.
 So there is still a good amount of work ahead to adapt this process to import a *full set of related entities* and deal with all the edge cases.
 
+**Project size**: Medium (175 hours)
+
 [^blog-2023]: Blog post: [GSoC 2023: Reviving the BookBrainz importer project](https://blog.metabrainz.org/2023/11/06/gsoc-2023-reviving-the-bookbrainz-importer-project/)
 
 [JSON]: https://www.json.org/json-en.html
@@ -504,6 +506,9 @@ As of writing this proposal, the latest available dumps are from February 2023:
   - Write a blog post about the project
 
 - **November 4 (18:00 UTC)**: *Final Submission and Final Evaluation*
+
+If there should be unexpected delays, the priority would be to have a working UI to accept pending entities.
+Consequently the more advanced features to create pending updates for already accepted entities would be the next things which could be skipped without having loose ends.
 
 # About Me
 
